@@ -4,11 +4,11 @@
 
 | Thành viên | GitHub handle | Module chính | Vai quy trình | Người dự phòng cho |
 |---|---|---|---|---|
-| osgi23 | osgi23 | sim/gather, sim/quan, client/ui | PO / Integrator / QA / Release | - |
+| Nguyễn Mạnh Quân (2A202603776) | osgi23 | sim/gather, sim/quan, client/ui | PO / Integrator / QA / Release | - |
 
 **Vai quy trình:** PO (đầu mối hỏi giảng viên, giữ `docs/clarify.md`) · Integrator (giữ `docs/contracts/`, gắn tag) · QA lead · Scrum/Release. 
 
-> **Lưu ý:** Do tất cả các nhóm trong lớp đều đã đủ thành viên (full), sinh viên `osgi23` thực hiện bài lab một mình (solo 1 thành viên) và kiêm nhiệm tất cả các module (`sim/gather`, `sim/quan`, `client/ui`, `qa`).
+> **Lưu ý:** Do tất cả các nhóm trong lớp đều đã đủ thành viên (full), sinh viên **Nguyễn Mạnh Quân** (MSV: `2A202603776`, GitHub: `osgi23`) thực hiện bài lab một mình (solo 1 thành viên) và kiêm nhiệm tất cả các module (`sim/gather`, `sim/quan`, `client/ui`, `qa`).
 
 ## Thỏa thuận làm việc nhóm (Solo)
 

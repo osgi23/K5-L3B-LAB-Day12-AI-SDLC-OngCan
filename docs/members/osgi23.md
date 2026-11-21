@@ -1,4 +1,8 @@
-# osgi23 — phản tư cá nhân (≤ 200 từ)
+# Nguyễn Mạnh Quân (2A202603776 / osgi23) — phản tư cá nhân (≤ 200 từ)
+
+- **Họ và tên:** Nguyễn Mạnh Quân
+- **Mã sinh viên:** 2A202603776
+- **GitHub handle:** osgi23
 
 - **Tôi đã làm (kèm link commit):**
   - Đóng vai trò Solo developer kiêm PO, Integrator và QA Lead do các nhóm khác đã full.

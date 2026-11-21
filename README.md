@@ -57,4 +57,4 @@ Toàn bộ 45 unit test và smoke test kiểm chứng tất cả các AC của P
 - **Bằng chứng lõi vẫn đúng:** Chạy toàn bộ 40 test hộp đen trong `tests/` với kết quả 40/40 OK; khớp từng byte với yêu cầu Test Contract v1.0 và PRD-0.
 
 ## Thành viên nhóm
-- `osgi23`: Solo developer kiêm nhiệm PO, Integrator, QA Lead, Release do các nhóm trong lớp đã đủ thành viên (chi tiết tại [TEAM.md](TEAM.md) và [docs/clarify.md](docs/clarify.md)).
+- **Nguyễn Mạnh Quân** (MSV: `2A202603776`, GitHub: `osgi23`): Solo developer kiêm nhiệm PO, Integrator, QA Lead, Release do các nhóm trong lớp đã đủ thành viên (chi tiết tại [TEAM.md](TEAM.md) và [docs/clarify.md](docs/clarify.md)).
