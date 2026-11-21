@@ -6,7 +6,7 @@ import unittest
 from chonoi.errors import BadInput
 from chonoi.ids import IdAllocator, id_key, sort_by_id
 from chonoi.contract import load_contract
-from chonoi.inputs import InputPlayer, LiveInputs, load_frames
+from chonoi.inputs import InputPlayer, LiveInputs, load_frames, BUTTONS_V10
 from chonoi.runner import Session
 
 from helpers import Workdir, frames, write_json
@@ -45,9 +45,9 @@ class Units(unittest.TestCase):
 
     def test_catch_is_a_v10_button_and_attack_is_not(self):
         with Workdir() as w:
-            load_frames(write_json(w.path("i.json"), frames({"tick": 0, "catch": True})))
+            load_frames(write_json(w.path("i.json"), frames({"tick": 0, "catch": True})), buttons=BUTTONS_V10)
             with self.assertRaises(BadInput):
-                load_frames(write_json(w.path("j.json"), frames({"tick": 0, "attack": True})))
+                load_frames(write_json(w.path("j.json"), frames({"tick": 0, "attack": True})), buttons=BUTTONS_V10)
 
     def test_live_inputs_keep_fast_tap_edge(self):
         li = LiveInputs()
