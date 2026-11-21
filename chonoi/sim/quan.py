@@ -30,12 +30,14 @@ class QuanSim:
     mode = "quan"
     phase = "quan"
 
-    def __init__(self, tuning, scenario, streams, ids, inventory=None):
+    def __init__(self, tuning, scenario, streams, ids, inventory=None, day_plan=None,
+                 initial_money=0, initial_earned=0, initial_reputation=None):
         t = tuning["quan"]
         self.t = t
         self.menu = tuning["menu"]
         self.rng = streams
         self.ids = ids
+        self.day_plan = day_plan
         p = scenario.get("player", {})
         self.pos = [float(c) for c in p.get("pos", t["start_pos"])]
         self.vel = [float(c) for c in p.get("vel", [0.0, 0.0])]
@@ -46,7 +48,10 @@ class QuanSim:
         self.hand = scenario.get("hand")
         self.time_left_ticks = scenario.get("time_left_ticks", int(round(t["duration_s"] * 60)))
         self.phase_tick = 0
-        self.reputation = float(scenario.get("reputation", t["reputation_initial"]))
+        if initial_reputation is not None:
+            self.reputation = float(initial_reputation)
+        else:
+            self.reputation = float(scenario.get("reputation", t["reputation_initial"]))
         self.stoves = [dict(s, state=s.get("state", "idle"), dish=s.get("dish"),
                             order_id=s.get("order_id"), base_price=s.get("base_price"),
                             cook_ticks_left=s.get("cook_ticks_left", 0), ready_ticks=s.get("ready_ticks", 0))
@@ -79,8 +84,8 @@ class QuanSim:
         for tb in self.tables:
             ids.reserve(tb["id"])
 
-        self.money = 0
-        self.earned = 0
+        self.money = initial_money
+        self.earned = initial_earned
         self.shift_earned = 0
         self.done = False
         self.reason = None
@@ -354,12 +359,14 @@ class QuanSim:
                     for k, count in c.get("reserved", {}).items():
                         avail_stock[k] = avail_stock.get(k, 0) - count
 
-                # Duyệt 3 món theo mã Unicode
+                # Trong day, lọc menu theo id món trong kế hoạch trước khi lọc nguyên liệu khả dụng.
+                allowed_dishes = sorted(self.day_plan["dishes"].keys()) if self.day_plan and "dishes" in self.day_plan else sorted(self.menu.keys())
                 fulfillable = []
-                for dish_id in sorted(self.menu.keys()):
-                    recipe = self.menu[dish_id]["recipe"]
-                    if all(avail_stock.get(k, 0) >= count for k, count in recipe.items()):
-                        fulfillable.append(dish_id)
+                for dish_id in allowed_dishes:
+                    if dish_id in self.menu:
+                        recipe = self.menu[dish_id]["recipe"]
+                        if all(avail_stock.get(k, 0) >= count for k, count in recipe.items()):
+                            fulfillable.append(dish_id)
 
                 if not fulfillable:
                     events.append(("no_dish", {}))
