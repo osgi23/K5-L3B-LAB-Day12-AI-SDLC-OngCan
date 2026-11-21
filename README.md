@@ -66,15 +66,21 @@ python3 -m chonoi.live --mode day
 
 ## 4. Tính năng nổi bật & Sáng tạo của nhóm
 
-1. **Hệ thống cảnh báo trợ năng đa kênh**:
-   - 3 Cảnh báo trực quan nổi bật kèm biểu tượng: Cảnh báo cá sấu rượt gần, Cảnh báo oxy sắp cạn (< 5s), Cảnh báo khách chờ sắp giận (< 25% kiên nhẫn).
-   - **Chế độ tương phản cao (High Contrast Mode)**: Tối ưu cho người khiếm thị màu hoặc môi trường ánh sáng yếu, chuyển giao diện sang bảng màu đen/vàng/cyan/đỏ sắc nét, viền dày.
-   - **Phụ đề SFX**: Hiển thị mô tả âm thanh hành động theo thời gian thực (lặn, ngoi, bắt cá, đớp trúng, xèo xèo nấu món, trả tiền...).
-2. **Quản lý kho cá thể & Suy giảm độ tươi (Mùa Nước Nổi - Contract v1.2 & v1.3)**:
+1. **Âm thanh thực tế qua Web Audio API & Hiệu ứng hạt (Particle Effects)**:
+   - Tự động tổng hợp âm thanh bằng oscillator (không cần tải file ngoài): tiếng bọt nước bì bõm, xèo xèo nấu bếp, ting món chín, keng keng nhận tiền & boa, cảnh báo cá sấu.
+   - Nhạc nền đồng quê Nam Bộ 8-bit êm dịu, có nút Bật/Tắt âm thanh tiện lợi (phím `M`).
+   - Hệ thống hạt sống động: bọt nước nổi khi lặn, khói bếp bốc khi nấu, chữ tiền bay `+60k`, `+12k (boa ⭐)` trên đầu bàn ăn.
+   - Tạo hình Út Sen với nón lá vàng và khăn rằn Nam Bộ đặc trưng.
+2. **Trợ năng, Cảnh báo & La bàn điều hướng**:
+   - 3 Cảnh báo trực quan nổi bật kèm biểu tượng: Thủy quái rượt gần, Oxy sắp cạn (< 5s), Khách chờ sắp giận (< 25% kiên nhẫn).
+   - **Chế độ tương phản cao (High Contrast Mode)**: Tối ưu cho người khiếm thị màu hoặc môi trường ánh sáng yếu (phím `C`).
+   - **La bàn bến tàu (Dock Compass)**: Định vị khoảng cách và chỉ hướng về bến `[2, 0]`, cảnh báo đỏ khi sắp hết giờ ca sáng.
+   - Bảng xếp hạng Top 10 cao thủ xem trực tiếp trên web bằng nút `🏆 Xếp Hạng`.
+3. **Quản lý kho cá thể & Suy giảm độ tươi (Mùa Nước Nổi - Contract v1.2 & v1.3)**:
    - Theo dõi từng cá thể nguyên liệu `{id, kind, fresh}`.
    - Giảm độ tươi theo giây, cảnh báo ươn khi $< 30\%$, tự động đổi nguyên liệu tươi cho khách.
    - Định giá động theo độ tươi và tính tiền boa chuẩn xác.
-3. **Hiệu năng & Độ ổn định cao**:
+4. **Hiệu năng & Độ ổn định cao**:
    - Benchmark đạt trên 69 FPS trung bình, 1% low trên 63 FPS, khởi động dưới 1ms.
    - Soak test 10 ngày hoàn thành chỉ trong 1.2 giây với 0 lỗi phát sinh.
 

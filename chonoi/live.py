@@ -151,6 +151,10 @@ class _Handler(BaseHTTPRequestHandler):
         path = self.path.split("?", 1)[0]
         if path == "/state":
             self._send(200, self.game.state_json())
+        elif path == "/leaderboard":
+            from .leaderboard import load_leaderboard
+            lb_data = json.dumps(load_leaderboard("leaderboard.json"), ensure_ascii=False).encode("utf-8")
+            self._send(200, lb_data)
         elif path in ("/", "/index.html"):
             try:
                 with open(os.path.join(WEB_DIR, "index.html"), "rb") as f:
