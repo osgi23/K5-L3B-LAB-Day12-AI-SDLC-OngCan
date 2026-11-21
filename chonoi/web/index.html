@@ -205,14 +205,28 @@ function drawGather(w, h) {
   if (p && p.catch_cd_ticks > 0) text("hồi chiêu bắt " + (p.catch_cd_ticks / 60).toFixed(1) + "s", 150, 52, { size: 12, color: "#9fb3c0" });
   // giỏ (khoang) dưới
   if (snap.hold && snap.hold_capacity) {
-    const cap = snap.hold_capacity, sz = Math.min(30, (w - 260) / cap - 4), y0 = h - bottom + 8;
+    const cap = snap.hold_capacity, sz = Math.min(34, (w - 260) / cap - 4), y0 = h - bottom + 6;
     for (let i = 0; i < cap; i++) {
       const x0 = 14 + i * (sz + 4);
       ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(x0, y0, sz, sz);
-      if (snap.hold[i]) { ctx.fillStyle = kc(snap.hold[i]); ctx.fillRect(x0 + 3, y0 + 3, sz - 6, sz - 6); }
+      const it = snap.hold[i];
+      if (it) {
+        const k = typeof it === "string" ? it : it.kind;
+        const fr = (typeof it === "object" && it.fresh !== undefined) ? it.fresh : 100;
+        const isSpoiled = fr < 30;
+        ctx.fillStyle = isSpoiled ? "#546e7a" : kc(k);
+        ctx.fillRect(x0 + 2, y0 + 2, sz - 4, sz - 4);
+        if (typeof it === "object") {
+          ctx.font = "bold 9px system-ui";
+          ctx.fillStyle = isSpoiled ? "#ff5252" : "#ffffff";
+          ctx.textAlign = "center";
+          ctx.fillText(isSpoiled ? "ƯƠN" : Math.round(fr) + "%", x0 + sz / 2, y0 + sz - 2);
+        }
+      }
     }
-    const names = {}; snap.hold.forEach((k) => (names[k] = (names[k] || 0) + 1));
-    text("Giỏ " + snap.hold.length + "/" + cap + "  " + Object.keys(names).map((k) => (KIND_NAME[k] || k) + "×" + names[k]).join(", "), 14, y0 + sz + 16, { size: 12, color: "#cfd8dc" });
+    const freshCount = snap.hold.filter(it => (typeof it === "object" ? it.fresh >= 30 : true)).length;
+    const spoiledCount = snap.hold.length - freshCount;
+    text(`Giỏ ${snap.hold.length}/${cap} (Tươi: ${freshCount}, Ươn: ${spoiledCount})`, 14, y0 + sz + 14, { size: 12, color: "#cfd8dc" });
   }
   text("WASD/mũi tên bơi · E hái / cập bến · Space bắt cá · R chơi lại", w - 10, h - 14, { size: 12, align: "right", color: "#9fb3c0" });
 }
@@ -264,8 +278,17 @@ function drawQuan(w, h) {
   // HUD
   text("⏱ " + fmtTime(snap.time_left_ticks), 14, 28, { size: 20 });
   text(`Tiền ${snap.money ?? 0}k · uy tín ${(snap.reputation ?? 0).toFixed(1)} · điểm ${snap.score ?? 0}`, 110, 28, { size: 16 });
-  const stock = snap.stock ? Object.keys(snap.stock).map((k) => (KIND_NAME[k] || k) + "×" + snap.stock[k]).join(", ") : "";
-  text("Kho: " + (stock || "(trống)"), 14, 52, { size: 13, color: "#cfd8dc" });
+  let stockStr = "";
+  if (Array.isArray(snap.stock)) {
+    stockStr = snap.stock.map(it => {
+      const isSpoiled = it.fresh < 30;
+      const status = isSpoiled ? " [ƯƠN]" : ` [${Math.round(it.fresh)}%]`;
+      return `${KIND_NAME[it.kind] || it.kind}${status}`;
+    }).join(", ");
+  } else if (snap.stock) {
+    stockStr = Object.keys(snap.stock).map((k) => (KIND_NAME[k] || k) + "×" + snap.stock[k]).join(", ");
+  }
+  text("Kho: " + (stockStr || "(trống)"), 14, 52, { size: 13, color: "#cfd8dc" });
   text("WASD/mũi tên đi · E tương tác (bếp / bàn) · R chơi lại", w - 10, h - 14, { size: 12, align: "right", color: "#9fb3c0" });
 }
 

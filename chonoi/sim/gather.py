@@ -58,7 +58,24 @@ class GatherSim:
         self.invuln_ticks = p.get("invuln_ticks", 0)
         self.catch_cd_ticks = p.get("catch_cd_ticks", 0)
         self.attack_cd_ticks = p.get("attack_cd_ticks", 0)
-        self.hold = list(scenario.get("hold", []))
+
+        self.hold = []
+        for it in scenario.get("hold", []):
+            if isinstance(it, dict):
+                ids.reserve(it["id"])
+                self.hold.append({
+                    "id": it["id"],
+                    "kind": it["kind"],
+                    "fresh": float(it["fresh"])
+                })
+            else:
+                iid = ids.new("I")
+                self.hold.append({
+                    "id": iid,
+                    "kind": it,
+                    "fresh": 100.0
+                })
+
         self.time_left_ticks = scenario.get("time_left_ticks", int(round(t["duration_s"] * TICK)))
         self.phase_tick = 0
 
@@ -153,7 +170,7 @@ class GatherSim:
                     break
         return fish_list
 
-    def inventory_items(self) -> dict:
+    def inventory_items(self) -> list:
         return hold_to_items(self.hold)
 
     def snapshot(self) -> dict:
@@ -163,7 +180,12 @@ class GatherSim:
                        "hp": self.hp, "hp_max": self.hp_max, "zero_oxy_ticks": self.zero_oxy_ticks,
                        "invuln_ticks": self.invuln_ticks, "catch_cd_ticks": self.catch_cd_ticks,
                        "at_surface": self._at_surface()},
-            "hold": self.hold, "hold_count": len(self.hold),
+            "hold": [{
+                "id": it["id"],
+                "kind": it["kind"],
+                "fresh": round(it["fresh"], 6) if isinstance(it["fresh"], float) else it["fresh"]
+            } for it in self.hold],
+            "hold_count": len(self.hold),
             "hold_capacity": self.t["hold_capacity"],
             "nodes": [{"id": n["id"], "pos": n["pos"], "kind": n["kind"],
                        "ready": n["regrow_ticks"] == 0, "regrow_ticks": n["regrow_ticks"]}
@@ -188,6 +210,23 @@ class GatherSim:
                 n["regrow_ticks"] -= 1
                 if n["regrow_ticks"] == 0:
                     events.append(("node_regrown", {"node_id": n["id"]}))
+
+        # 2. Hao tươi các cá thể có sẵn trong giỏ (0.5/s = 0.5/60 mỗi tick)
+        decay = 0.5 / TICK
+        spoiled_candidates = []
+        for it in self.hold:
+            prev_fresh = it["fresh"]
+            it["fresh"] = max(0.0, it["fresh"] - decay)
+            if prev_fresh >= 30.0 and it["fresh"] < 30.0:
+                spoiled_candidates.append(it)
+        if spoiled_candidates:
+            spoiled_candidates.sort(key=lambda item: id_key(item["id"]))
+            for it in spoiled_candidates:
+                events.append(("spoiled", {
+                    "item_id": it["id"],
+                    "kind": it["kind"],
+                    "location": "hold"
+                }))
 
         # 2. Bơi người chơi + dive/surface
         was_surface = self._at_surface()
@@ -218,8 +257,14 @@ class GatherSim:
                     self.hp -= 1
                     events.append(("choke", {"hp": self.hp}))
                     if self.hp <= 0:
-                        lost = list(reversed(self.hold))
-                        self.hold.clear()
+                        lost = []
+                        while self.hold:
+                            it = self.hold.pop()
+                            lost.append({
+                                "id": it["id"],
+                                "kind": it["kind"],
+                                "fresh": round(it["fresh"], 6) if isinstance(it["fresh"], float) else it["fresh"]
+                            })
                         events.append(("faint", {"cause": "choke", "lost": lost, "hp": 0}))
                         self._finish("fainted", events)
                         return events
@@ -227,8 +272,14 @@ class GatherSim:
         # 4. Cập nhật Cá Sấu Năm Chèo (di chuyển & va chạm hit)
         hit_occurred = self._update_monsters(events)
         if self.hp <= 0:
-            lost = list(reversed(self.hold))
-            self.hold.clear()
+            lost = []
+            while self.hold:
+                it = self.hold.pop()
+                lost.append({
+                    "id": it["id"],
+                    "kind": it["kind"],
+                    "fresh": round(it["fresh"], 6) if isinstance(it["fresh"], float) else it["fresh"]
+                })
             events.append(("faint", {"cause": "monster", "lost": lost, "hp": 0}))
             self._finish("fainted", events)
             return events
@@ -262,7 +313,8 @@ class GatherSim:
                         }))
                     else:
                         for _ in range(nyield):
-                            self.hold.append(chosen_node["kind"])
+                            iid = self.ids.new("I")
+                            self.hold.append({"id": iid, "kind": chosen_node["kind"], "fresh": 100.0})
                         chosen_node["regrow_ticks"] = int(round(self.t["regrow_s"] * TICK))
                         events.append(("gather", {
                             "node_id": chosen_node["id"],
@@ -294,7 +346,8 @@ class GatherSim:
                         }))
                     else:
                         for _ in range(fyield):
-                            self.hold.append(chosen_fish["kind"])
+                            iid = self.ids.new("I")
+                            self.hold.append({"id": iid, "kind": chosen_fish["kind"], "fresh": 100.0})
                         self.fish.remove(chosen_fish)
                         events.append(("fish_caught", {
                             "fish_id": chosen_fish["id"],
@@ -378,7 +431,12 @@ class GatherSim:
                 lost_count = len(self.hold) // 2
                 lost = []
                 for _ in range(lost_count):
-                    lost.append(self.hold.pop())
+                    it = self.hold.pop()
+                    lost.append({
+                        "id": it["id"],
+                        "kind": it["kind"],
+                        "fresh": round(it["fresh"], 6) if isinstance(it["fresh"], float) else it["fresh"]
+                    })
                 self.invuln_ticks = 90
 
                 events.append(("monster_hit", {

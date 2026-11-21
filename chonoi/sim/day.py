@@ -35,7 +35,7 @@ class DaySim:
         self.active_upgrades = dict(self.upgrades)
 
         self.phase = "gather"
-        self.stock = {}
+        self.stock = []
         self._init_day(self.day)
 
     def _get_day_plan(self, d: int) -> dict:
@@ -131,9 +131,9 @@ class DaySim:
         if self.phase == "gather" and self.sub_sim.done:
             # Ca lặn kết thúc
             if self.sub_sim.reason == "fainted":
-                self.stock = {}
+                self.stock = []
             else:
-                self.stock = self.sub_sim.inventory_items()
+                self.stock = list(self.sub_sim.inventory_items())
 
             self.phase = "quan"
             q_scen = dict(self.scenario.get("quan", {}))
@@ -150,7 +150,7 @@ class DaySim:
             self.money = self.sub_sim.money
             self.earned = self.sub_sim.earned
             self.reputation = self.sub_sim.reputation
-            self.stock = dict(self.sub_sim.stock)
+            self.stock = list(self.sub_sim.stock)
 
             self.phase = "shop"
             shop_scen = dict(self.scenario.get("shop", {}))
@@ -172,6 +172,7 @@ class DaySim:
                 self.reason = "days_complete"
             else:
                 self.day += 1
+                self.stock = []
                 self._init_day(self.day)
                 out_events.append(("gather", "day_start", {}, self.day))
                 out_events.append(("gather", "day_plan", dict(self.current_day_plan), self.day))

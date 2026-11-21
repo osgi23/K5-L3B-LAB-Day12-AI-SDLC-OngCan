@@ -5,6 +5,7 @@ Hỗ trợ cả ba mode: gather, quan, day.
 """
 
 import json
+import math
 
 from .errors import BadInput
 from .inventory import KINDS, validate_items
@@ -60,10 +61,31 @@ def _validate_gather(b, tuning):
         raise BadInput("random_fish phải là boolean")
     if "hold" in b:
         h = b["hold"]
-        if not isinstance(h, list) or any(k not in KINDS for k in h):
-            raise BadInput("hold phải là mảng id nguyên liệu hợp lệ")
+        if not isinstance(h, list):
+            raise BadInput("hold phải là mảng")
         if len(h) > g["hold_capacity"]:
             raise BadInput("hold vượt sức chứa")
+        seen_ids = set()
+        for item in h:
+            if isinstance(item, str):
+                if item not in KINDS:
+                    raise BadInput(f"nguyên liệu lạ trong hold: {item}")
+            elif isinstance(item, dict):
+                if set(item.keys()) != {"id", "kind", "fresh"}:
+                    raise BadInput(f"cá thể trong hold phải có đúng id, kind, fresh: {list(item.keys())}")
+                iid = item.get("id")
+                if not isinstance(iid, str) or not iid:
+                    raise BadInput("id trong hold phải là chuỗi khác rỗng")
+                if iid in seen_ids:
+                    raise BadInput(f"id trùng trong hold: {iid}")
+                seen_ids.add(iid)
+                if item.get("kind") not in KINDS:
+                    raise BadInput(f"nguyên liệu lạ trong hold: {item.get('kind')}")
+                fr = item.get("fresh")
+                if isinstance(fr, bool) or not isinstance(fr, (int, float)) or not (0.0 <= fr <= 100.0) or math.isnan(fr) or math.isinf(fr):
+                    raise BadInput(f"độ tươi ngoài [0, 100]: {fr}")
+            else:
+                raise BadInput("phần tử trong hold phải là string hoặc object cá thể")
     p = b.get("player", {})
     if not isinstance(p, dict):
         raise BadInput("player phải là object")
@@ -142,9 +164,43 @@ def _validate_quan(b, tuning):
         raise BadInput("player.vel phải là [x, z]")
     table_ids = [c.get("table_id") for c in b.get("customers", [])]
     known = {t["id"] for t in tuning["quan"]["tables"]} | {t.get("id") for t in b.get("tables", [])}
+    stock_items = b.get("stock", [])
+    stock_by_id = {}
+    if isinstance(stock_items, list):
+        for it in stock_items:
+            if isinstance(it, dict) and "id" in it:
+                stock_by_id[it["id"]] = it
+
+    reserved_ids_all = set()
     for c in b.get("customers", []):
         if not isinstance(c.get("table_id"), str) or c["table_id"] not in known:
             raise BadInput(f"customers.{c['id']}: table_id phải là bàn có thật")
+        dish_id = c.get("dish_id")
+        if dish_id and dish_id not in tuning["menu"]:
+            raise BadInput(f"món {dish_id} không có trong menu")
+        if "reserved" in c:
+            res = c["reserved"]
+            if not isinstance(res, list):
+                raise BadInput(f"customers.{c['id']}.reserved phải là mảng id cá thể")
+            recipe = tuning["menu"].get(dish_id, {}).get("recipe", {})
+            needed_kinds = []
+            for k, count in recipe.items():
+                needed_kinds.extend([k] * count)
+            reserved_kinds = []
+            for r_id in res:
+                if not isinstance(r_id, str):
+                    raise BadInput(f"id trong reserved phải là chuỗi: {r_id}")
+                if r_id in reserved_ids_all:
+                    raise BadInput(f"cá thể {r_id} bị giữ trùng giữa các đơn")
+                reserved_ids_all.add(r_id)
+                if r_id not in stock_by_id:
+                    raise BadInput(f"cá thể giữ {r_id} không có trong kho stock")
+                st_item = stock_by_id[r_id]
+                if st_item["fresh"] < 30.0:
+                    raise BadInput(f"cá thể giữ {r_id} đã bị ươn (fresh < 30): {st_item['fresh']}")
+                reserved_kinds.append(st_item["kind"])
+            if sorted(reserved_kinds) != sorted(needed_kinds):
+                raise BadInput(f"phần giữ không khớp công thức món {dish_id}")
     if len(table_ids) != len(set(table_ids)):
         raise BadInput("hai khách cùng bàn")
 

@@ -11,6 +11,17 @@
 - 1 hành động cho Phase 3:
   - Khi nhận Change Request (Ticket-03), thực hiện phân tích tác động (Impact Analysis) và lập ADR kỹ lưỡng trước khi chỉnh sửa logic lõi để không gây hồi quy (regression) cho vòng ngày.
 
+## Phase 3 (nhanh)
+- Điều tốt:
+  - Lập ADR-0001 và bảng phân tích tác động chi tiết trước khi code giúp quá trình Breaking Change từ kho đếm sang kho cá thể (v1.2) diễn ra chuẩn xác, không làm vỡ vòng ngày `DaySim`.
+  - Cấp phát ID cá thể `I1, I2, ...` liên tục, duy nhất và bảo lưu xuyên suốt các ca chơi và các ngày.
+  - Xử lý mượt mà cơ chế phát hiện ươn (`spoiled`), tái giữ chỗ tự động cho đơn khách khi hàng bị ươn, và tính giá động theo độ tươi nguyên liệu.
+  - Đạt 55/55 test xanh hoàn toàn (100%), đầy đủ proof tích hợp và cập nhật trực quan trên HUD client.
+- Điều tệ:
+  - Ban đầu độ chính xác làm tròn trong `inventory.py` (6 số) lệch so với `jsonl.py` (3 số), cần đồng bộ về chuẩn 3 chữ số thập phân (`round(v, 3)`).
+- 1 hành động cho Phase 4:
+  - Tối ưu hóa hiệu năng, benchmark tick rate mô phỏng, đóng gói phát hành Release v1.0.0 hoàn chỉnh và hoàn thành toàn bộ tài liệu tổng kết lab.
+
 ## Phase 4 (cuối)
 - Rà lại hành động Phase 2: đã làm chưa? vì sao?
 - Điều tốt / điều tệ:

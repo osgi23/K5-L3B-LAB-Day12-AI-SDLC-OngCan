@@ -6,6 +6,9 @@ Kết thúc shop bằng nút shop_done (O) hoặc timeout sau 10 s (600 tick).
 """
 
 
+from ..ids import id_key
+
+
 class ShopSim:
     mode = "day"
     phase = "shop"
@@ -19,7 +22,7 @@ class ShopSim:
         self.money = money
         self.earned = earned
         self.reputation = reputation
-        self.stock = dict(stock or {})
+        self.stock = list(stock or [])
         self.upgrades = dict(upgrades or {"oxygen": 0, "hp": 0})
         self.bought_today = set()
         self.phase_tick = 0
@@ -27,8 +30,14 @@ class ShopSim:
         self.reason = None
 
     def snapshot(self) -> dict:
+        sorted_stock = sorted(self.stock, key=lambda it: id_key(it["id"]))
+        clean_stock = [{
+            "id": it["id"],
+            "kind": it["kind"],
+            "fresh": round(it["fresh"], 6) if isinstance(it["fresh"], float) else it["fresh"]
+        } for it in sorted_stock]
         return {
-            "stock": {k: self.stock[k] for k in sorted(self.stock) if self.stock[k] > 0}
+            "stock": clean_stock
         }
 
     def step(self, inp):

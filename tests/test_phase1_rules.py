@@ -69,16 +69,16 @@ class TestPhase1Gather(unittest.TestCase):
             self.assertEqual(len(faint_evs), 1)
             self.assertEqual(faint_evs[0]["data"]["cause"], "choke")
             # Thứ tự bỏ LIFO: nhặt sau bỏ trước (bong_sung rồi ca_loc)
-            self.assertEqual(faint_evs[0]["data"]["lost"], ["bong_sung", "ca_loc"])
+            self.assertEqual([it["kind"] for it in faint_evs[0]["data"]["lost"]], ["bong_sung", "ca_loc"])
 
             end_evs = events(rows, "gather_end")
             self.assertEqual(len(end_evs), 1)
             self.assertEqual(end_evs[0]["data"]["reason"], "fainted")
-            self.assertEqual(end_evs[0]["data"]["inventory"], {"items": {}})
+            self.assertEqual(end_evs[0]["data"]["inventory"], {"items": []})
 
             # File kho phải rỗng khi ngất
             with open(inv, encoding="utf-8") as f:
-                self.assertEqual(json.load(f), {"items": {}})
+                self.assertEqual(json.load(f), {"items": []})
 
     def test_gather_node_interaction_and_hold_full(self):
         """Hái cây ở mặt nước, đủ chỗ thì phát gather; đầy chỗ phát hold_full."""
@@ -132,7 +132,7 @@ class TestPhase1Gather(unittest.TestCase):
             self.assertEqual(fc_evs[0]["data"]["yield"], 3)
             # Kiểm tra giỏ trong snapshot có 3 cá linh
             last_snap = snapshots(rows)[-1]
-            self.assertEqual(last_snap["hold"], ["ca_linh", "ca_linh", "ca_linh"])
+            self.assertEqual([it["kind"] for it in last_snap["hold"]], ["ca_linh", "ca_linh", "ca_linh"])
 
 
 class TestPhase1Quan(unittest.TestCase):
@@ -194,6 +194,7 @@ class TestPhase1Quan(unittest.TestCase):
         with Workdir() as w:
             sc = write_json(w.path("sc.json"), {"quan": {
                 "player": {"pos": [8, 5]},
+                "stock": [{"id": "I1", "kind": "bong_sung", "fresh": 100}, {"id": "I2", "kind": "bong_sung", "fresh": 100}],
                 "customers": [{
                     "id": "C1", "table_id": "T1", "dish_id": "goi_bong_sung",
                     "state": "waiting", "patience_ticks_left": 2, "order_status": "reserved"
