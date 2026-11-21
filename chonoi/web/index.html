@@ -58,6 +58,8 @@ addEventListener("keydown", (e) => {
   if (MOVE_KEYS[k]) { down.add(MOVE_KEYS[k]); e.preventDefault(); }
   else if (k === "e") down.add("interact");
   else if (k === " ") { down.add("catch"); e.preventDefault(); }
+  else if (k === "1") { fetch("/input", { method: "POST", body: JSON.stringify({ buy: "oxygen" }), headers: { "Content-Type": "application/json" } }); }
+  else if (k === "2") { fetch("/input", { method: "POST", body: JSON.stringify({ buy: "hp" }), headers: { "Content-Type": "application/json" } }); }
   else if (k === "p" || k === "escape") down.add("pause");
   else if (k === "o") down.add("shop_done");
   else if (k === "r") { fetch("/restart", { method: "POST" }); lastSent = ""; down.clear(); }
@@ -267,12 +269,40 @@ function drawQuan(w, h) {
   text("WASD/mũi tên đi · E tương tác (bếp / bàn) · R chơi lại", w - 10, h - 14, { size: 12, align: "right", color: "#9fb3c0" });
 }
 
+function drawShop(w, h) {
+  text("🏪 TIỆM TẠP HÓA ÚT SEN — SHOP NÂNG CẤP CUỐI NGÀY", w / 2, 80, { size: 22, align: "center", color: "#f2c230" });
+  text(`Tiền hiện có: ${snap.money ?? 0} k  ·  Tổng thu: ${snap.earned ?? 0} k  ·  Uy tín: ${(snap.reputation ?? 0).toFixed(1)}`, w / 2, 120, { size: 16, align: "center" });
+
+  const oxyLvl = snap.upgrades ? (snap.upgrades.oxygen || 0) : 0;
+  const hpLvl = snap.upgrades ? (snap.upgrades.hp || 0) : 0;
+
+  ctx.fillStyle = "rgba(255,255,255,0.06)";
+  ctx.fillRect(w / 2 - 240, 160, 480, 80);
+  ctx.strokeStyle = "rgba(255,255,255,0.2)";
+  ctx.strokeRect(w / 2 - 240, 160, 480, 80);
+  text(`1. Bình Oxy — Cấp hiện tại: ${oxyLvl} / 2`, w / 2 - 220, 190, { size: 16 });
+  const oxyPrice = oxyLvl === 0 ? "200 k (nâng lên 45s)" : (oxyLvl === 1 ? "400 k (nâng lên 60s)" : "ĐÃ TỐI ĐA");
+  text(`[Phím 1] để nâng cấp: ${oxyPrice}`, w / 2 - 220, 220, { size: 13, color: oxyLvl < 2 ? "#d6e6f2" : "#888" });
+
+  ctx.fillRect(w / 2 - 240, 260, 480, 80);
+  ctx.strokeRect(w / 2 - 240, 260, 480, 80);
+  text(`2. Áo phao (Thêm Máu) — Cấp hiện tại: ${hpLvl} / 2`, w / 2 - 220, 290, { size: 16 });
+  const hpPrice = hpLvl === 0 ? "250 k (nâng lên 4 Máu)" : (hpLvl === 1 ? "500 k (nâng lên 5 Máu)" : "ĐÃ TỐI ĐA");
+  text(`[Phím 2] để nâng cấp: ${hpPrice}`, w / 2 - 220, 320, { size: 13, color: hpLvl < 2 ? "#e8799c" : "#888" });
+
+  text(`⏱ Thời gian còn: ${fmtTime(snap.time_left_ticks)}`, w / 2, 380, { size: 15, align: "center" });
+  text("👉 Bấm phím [O] để đóng Shop và sang ngày tiếp theo!", w / 2, 420, { size: 16, align: "center", color: "#8fcf6b" });
+}
+
 function frame() {
   requestAnimationFrame(frame);  // đặt trước để lỗi vẽ không làm dừng vòng lặp
   const [w, h] = fit();
   ctx.fillStyle = "#10161c"; ctx.fillRect(0, 0, w, h);
   if (snap) {
-    if (snap.mode === "quan") drawQuan(w, h); else drawGather(w, h);
+    const phase = snap.phase || snap.mode;
+    if (phase === "quan") drawQuan(w, h);
+    else if (phase === "shop") drawShop(w, h);
+    else drawGather(w, h);
     eventLog(w, h);
     overlay(w, h);
   } else {

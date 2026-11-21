@@ -101,7 +101,8 @@ class LiveGame:
     def state_json(self) -> bytes:
         with self._lock:
             snap = self.session.snapshot()
-            snap["meta"] = self.tuning[self.mode]
+            phase = snap.get("phase", self.mode)
+            snap["meta"] = self.tuning.get(phase, self.tuning.get(self.mode, {}))
             snap["events"] = list(self.events)
             snap["finished"] = self.session.done
             snap["reason"] = self.session.sim.reason if self.session.done else None
@@ -110,6 +111,7 @@ class LiveGame:
 
     def set_input(self, body: dict):
         move = body.get("move")
+        buy = body.get("buy")
         if move is not None:
             ok = (isinstance(move, list) and len(move) == 2 and
                   all(isinstance(c, (int, float)) and not isinstance(c, bool) and abs(c) <= 1 for c in move))
@@ -122,7 +124,7 @@ class LiveGame:
                     raise ValueError(f"{b} phải là boolean")
                 buttons[b] = body[b]
         with self._lock:
-            self.inputs.set(move, **buttons)
+            self.inputs.set(move, buy=buy, **buttons)
 
     def restart(self):
         with self._lock:
