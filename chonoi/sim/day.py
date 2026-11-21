@@ -44,6 +44,9 @@ class DaySim:
         if plan_entry is None:
             tuning_plans = self.tuning.get("day_plan", [])
             plan_entry = next((p for p in tuning_plans if p.get("day") == d), None)
+            if plan_entry is None and tuning_plans:
+                d_mapped = ((d - 1) % len(tuning_plans)) + 1
+                plan_entry = next((p for p in tuning_plans if p.get("day") == d_mapped), None)
 
         if plan_entry is None:
             return {"dishes": {}, "ingredients": {}}

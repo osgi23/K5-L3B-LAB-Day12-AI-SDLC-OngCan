@@ -25,6 +25,7 @@ from .contract import load_contract
 from .errors import BadInput
 from .inputs import LiveInputs
 from .inventory import read_inventory
+from .leaderboard import export_leaderboard
 from .runner import Session
 from .scenario import load_scenario
 
@@ -225,7 +226,16 @@ def main(argv=None) -> int:
     p.add_argument("--scenario")
     p.add_argument("--inventory", help="chỉ với quan: nạp kho từ file")
     p.add_argument("--inventory-out", dest="inventory_out", help="chỉ với gather: ghi kho khi kết thúc buổi")
+    p.add_argument("--export-leaderboard", dest="export_leaderboard", help="xuất bảng xếp hạng đã sắp")
+    p.add_argument("--leaderboard", help="đường dẫn file bảng xếp hạng nguồn")
     a = p.parse_args(argv)
+    if a.export_leaderboard:
+        try:
+            export_leaderboard(a.leaderboard or "leaderboard.json", a.export_leaderboard)
+            return 0
+        except Exception as e:
+            sys.stderr.write(f"lỗi xuất bảng xếp hạng: {e}\n")
+            return 1
     try:
         if a.inventory and a.mode != "quan":
             raise BadInput("--inventory chỉ dùng với quan")

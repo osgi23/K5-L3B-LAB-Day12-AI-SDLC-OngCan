@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to Semantic Versioning.
 
+## [1.0.0] - Phase 4 - 2026-11-21
+### Added
+- **Test Contract v1.3**:
+  - Declared `bench_cmd` (`python3 -m chonoi.bench`) and `soak_cmd` (`python3 -m chonoi.soak`) at the root of `game.contract.json`.
+  - Declared extension `leaderboard` in `extensions`.
+- **Benchmark with Render (`chonoi.bench`)**:
+  - Full 1280x720 canvas rendering simulation pipeline.
+  - 3-second warmup followed by 30-second measurement.
+  - Generates 5 standard performance metrics: `avg_fps`, `p1_low_fps`, `frames`, `measured_s`, `load_ms`.
+  - Exceeds target thresholds: avg FPS >= 60, 1% low FPS >= 30, startup load <= 10s.
+- **Headless Soak Testing (`chonoi.soak`)**:
+  - Runs full 10-day cycle headless simulation without memory leaks or crashes (`crashes = 0`).
+  - Seamlessly loops Day 1–5 plans for Days 6–10.
+  - Deterministic bot and `--inputs` frame playback support.
+  - Outputs summary metrics: `days`, `days_completed`, `crashes`, `results`, `duration_s`.
+- **Local Leaderboard Extension (`chonoi.leaderboard`)**:
+  - Persistent top-10 leaderboard store with stable score sorting (ties preserved by insertion order).
+  - CLI flags `--leaderboard <store.json>` and `--player-name <name>` in headless mode `day`.
+  - CLI flag `--export-leaderboard <out.json>` for exporting formatted rankings.
+- **Enhanced Player Alerts & Accessibility (`chonoi/web/index.html`)**:
+  - 3 high-visibility alerts with text & icons:
+    - Monster proximity & chase warning (`⚠️ THỦY QUÁI GẦN! CÁ SẤU ĐANG RƯỢT!`).
+    - Oxygen critical warning (`💨 OXY SẮP HẾT: NGOI LÊN GẤP!`).
+    - Angry customer warning (`😡 KHÁCH SẮP HẾT KIÊN NHẪN!`).
+  - High Contrast Mode toggleable via hotkey `C` or on-screen button with stark black/yellow/cyan/red palette and bold borders.
+  - Full visual rendering for Cá Sấu Năm Chèo (monsters) with animated jaws, glowing eyes, and dorsal ridges.
+  - SFX subtitle banner displaying action sounds in real-time.
+
 ## [Phase 3] - 2026-11-21
 ### Breaking Changes
 - **Item-based Inventory**: Replaced counted inventory dictionary `{"items": {"kind": count}}` with individual item array `{"items": [{"id": "I1", "kind": "ca_linh", "fresh": 100}, ...]}`.

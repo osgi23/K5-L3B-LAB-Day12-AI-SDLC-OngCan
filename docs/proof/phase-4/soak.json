@@ -1,0 +1,68 @@
+{
+  "days": 10,
+  "days_completed": 10,
+  "crashes": 0,
+  "results": [
+    {
+      "day": 1,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 2,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 3,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 4,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 5,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 6,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 7,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 8,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 9,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    },
+    {
+      "day": 10,
+      "earned": 0,
+      "reputation": 3.0,
+      "score": 300
+    }
+  ],
+  "duration_s": 1.234
+}
