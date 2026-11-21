@@ -13,7 +13,7 @@ python3 -m chonoi.live --mode gather
 
 ## Chế độ Headless & Test Contract
 
-Game hỗ trợ đầy đủ Test Contract v1.0 độc lập GPU/UI, chạy ở 60 tick/s:
+Game hỗ trợ đầy đủ **Test Contract v1.1** độc lập GPU/UI, chạy ở 60 tick/s:
 - **Chạy headless gather:**
   ```bash
   python3 -m chonoi.headless --mode gather --seed 42 --ticks 600 --out gather.jsonl --inventory-out catch.json
@@ -22,6 +22,10 @@ Game hỗ trợ đầy đủ Test Contract v1.0 độc lập GPU/UI, chạy ở 
   ```bash
   python3 -m chonoi.headless --mode quan --seed 42 --inventory catch.json --ticks 600 --out quan.jsonl
   ```
+- **Chạy headless vòng ngày hoàn chỉnh (`day`):**
+  ```bash
+  python3 -m chonoi.headless --mode day --seed 42 --days 2 --ticks 1200 --out day.jsonl
+  ```
 
 ## Điều khiển
 - **WASD / Phím mũi tên:** Di chuyển bơi (gather: ngang và sâu [x, d]) / đi lại trong nhà bè (quan: [x, z]).
@@ -29,6 +33,8 @@ Game hỗ trợ đầy đủ Test Contract v1.0 độc lập GPU/UI, chạy ở 
   - Buổi sáng: Cập bến (trong bến) hoặc hái hoa (ở mặt nước).
   - Buổi tối: Nấu món tại bếp / Nhặt món đã chín lên tay / Phục vụ món cho khách tại bàn.
 - **Space (`catch`):** Bắt cá khi lặn dưới nước (có hồi chiêu 0.5s).
+- **P / Esc (`pause`):** Tạm dừng mô phỏng (bấm lần 1 phát `paused`, bấm lần 2 phát `resumed`).
+- **O (`shop_done`):** Đóng cửa hàng Shop cuối ngày.
 - **R:** Chơi lại.
 
 ## Cách tính điểm (Score)
@@ -43,7 +49,7 @@ Game hỗ trợ đầy đủ Test Contract v1.0 độc lập GPU/UI, chạy ở 
 ```bash
 PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
 ```
-Toàn bộ 40 unit test và smoke test kiểm chứng tất cả các AC của Phase 1 đều vượt qua.
+Toàn bộ 45 unit test và smoke test kiểm chứng tất cả các AC của Phase 1 và Phase 2 đều vượt qua 100%.
 
 ## Sáng tạo của nhóm
 - **Tách lát cắt độc lập:** Thiết kế cấu trúc xử lý trạng thái theo từng lát (Oxy/Ngạt, Hái/Bắt cá, Khách/Giữ chỗ, Bếp/Phục vụ/Thanh toán) giúp code sạch và dễ bảo trì.
