@@ -26,4 +26,5 @@
 - Sáng tạo thêm được khuyến khích nhưng phải tắt ở headless (xem README, mục "Tự do sáng tạo").
 
 ## Skills / hooks của nhóm
-- (Ghi tên và khi nào dùng; tối thiểu 2 skill/hook/command nhóm tự viết, đặt ở `.agents/skills/` hoặc tương đương.)
+- `run-smoke-test` (`.agents/skills/run-smoke-test/SKILL.md`): Tự động chạy toàn bộ 40 test và smoke test 2 tiến trình tích hợp (gather xuất kho -> quan đọc kho). Dùng trước mỗi lần commit và gắn tag.
+- `check-contract` (`.agents/skills/check-contract/SKILL.md`): Kiểm tra danh sách thành viên `TEAM.md` và tính hợp lệ của `game.contract.json`. Dùng trước khi build CI.

@@ -1,56 +1,54 @@
 # Day 12 — AI SDLC: Quán Ăn Chợ Nổi
 
-> **Làm theo nhóm 4–6 người** · Dùng AI để xây game 2D qua **4 phase** trong **3 giờ**: Út Sen lặn bắt cá, hái rau trên mặt nước rồi tối mở quán phục vụ khách.
-> **Yêu cầu từng phase mở đúng mốc giờ tại lab board:** **[Chợ Nổi Lab](https://claude.ai/artifact/E35v787wSx2wDgPTNhMVDg)** (cần đăng nhập claude.ai; có trợ giảng AI cho từng phase).
+> **Nhóm OngCan** · Dự án game 2D quản lý quán ăn Chợ Nổi Rạch Sen (Út Sen lặn sông bắt cá, hái hoa buổi sáng và mở quán nấu ăn buổi tối).
+> **Lab Board:** **[Chợ Nổi Lab](https://claude.ai/artifact/E35v787wSx2wDgPTNhMVDg)**.
 
-## Bắt buộc (chỉ có thế)
-
-Cách làm việc kỹ thuật là **tự do** (push thẳng, nhánh + PR, pair, có hay không CI…). Cái bắt buộc:
-
-1. **Một repo chung:** trưởng nhóm **fork** repo này, đặt tên `K5-L3B-LAB-Day12-AI-SDLC-<ten-nhom>`, thêm mọi thành viên làm collaborator (*Settings → Collaborators*, quyền Write) và để repo **public** (giảng viên xem được, không cần mời).
-2. **Cả nhóm cùng commit** bằng tài khoản GitHub của mình, mỗi người **≥ 3 commit có nội dung** (làm cặp thì ghi `Co-authored-by:`).
-3. **Điền [`TEAM.md`](TEAM.md):** danh sách thành viên + thỏa thuận làm việc nhóm; sửa `team_size` trong [`game.contract.json`](game.contract.json). Commit của người không có trong `TEAM.md` không được tính.
-4. **Gắn tag** `phase-1` … `phase-4` đúng hạn; chạy được tại từng tag.
-5. **Ghi chép tối thiểu:** `docs/verification/phase-n.md`, `docs/clarify.md`, `docs/ai-usage-log.md`, `docs/retro.md`, `docs/members/<handle>.md`.
-
-## Bắt đầu nhanh
+## Hướng dẫn chạy nhanh (Clone sạch trong 3 lệnh)
 
 ```bash
-git clone <fork-của-nhóm> && cd <fork-của-nhóm>
-PYTHONPATH=tests:. python3 -m unittest discover -s tests -v        # smoke test
-python3 -m chonoi.live --mode gather                                # chơi thử trên trình duyệt (tùy chọn)
+git clone https://github.com/osgi23/K5-L3B-LAB-Day12-AI-SDLC-OngCan.git && cd K5-L3B-LAB-Day12-AI-SDLC-OngCan
+PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
+python3 -m chonoi.live --mode gather
 ```
 
-Game cần chế độ **headless** theo Test Contract (`python3 -m chonoi.headless --mode gather|quan …`) để được chạy và chấm tự động. **Công nghệ không ràng buộc**: khung Python trong `chonoi/` chỉ là gợi ý, chi tiết ở [`docs/STARTER.md`](docs/STARTER.md).
+## Chế độ Headless & Test Contract
 
-## Tự do sáng tạo
+Game hỗ trợ đầy đủ Test Contract v1.0 độc lập GPU/UI, chạy ở 60 tick/s:
+- **Chạy headless gather:**
+  ```bash
+  python3 -m chonoi.headless --mode gather --seed 42 --ticks 600 --out gather.jsonl --inventory-out catch.json
+  ```
+- **Chạy headless quan nạp kho:**
+  ```bash
+  python3 -m chonoi.headless --mode quan --seed 42 --inventory catch.json --ticks 600 --out quan.jsonl
+  ```
 
-Ngoài phần đề yêu cầu, nhóm được **thêm** nhân vật, loài cá/cây, sinh vật, món, bản đồ, cơ chế, câu chuyện, đồ họa, âm nhạc… với ba điều kiện: **không phá phần cố định** (tắt ở headless), ghi mục **"Sáng tạo của nhóm"** trong README của nhóm, và **làm lõi đúng trước**.
+## Điều khiển
+- **WASD / Phím mũi tên:** Di chuyển bơi (gather: ngang và sâu [x, d]) / đi lại trong nhà bè (quan: [x, z]).
+- **E (`interact`):** 
+  - Buổi sáng: Cập bến (trong bến) hoặc hái hoa (ở mặt nước).
+  - Buổi tối: Nấu món tại bếp / Nhặt món đã chín lên tay / Phục vụ món cho khách tại bàn.
+- **Space (`catch`):** Bắt cá khi lặn dưới nước (có hồi chiêu 0.5s).
+- **R:** Chơi lại.
 
-## Lịch 3 giờ
+## Cách tính điểm (Score)
+- Điểm được tính tự động tại mỗi snapshot và dòng `end`:
+  $$\text{Score} = \text{Earned} + 100 \times \lfloor \text{Reputation} \rfloor$$
+- Trong đó:
+  - `Earned`: Tổng tiền thu được từ các món ăn đã phục vụ (gồm cả tiền boa).
+  - `Reputation`: Điểm uy tín của quán (khởi đầu 3.0, tối đa 5.0, tối thiểu 0.0; phục vụ nhanh được boa + uy tín, để khách chờ hết kiên nhẫn bị trừ uy tín).
 
-| Mốc | Phase | Hạn tag |
-|---|---|---|
-| 0:00 | Phase 1 (PRD-0) | `phase-1` trước 1:00 |
-| 1:00 | Phase 2 | `phase-2` trước 1:55 |
-| 1:55 | Phase 3 | `phase-3` trước 2:30 |
-| 2:30 | Phase 4 | `phase-4` + Release `v1.0.0` trước 3:00 |
+## Kiểm thử tự động (1 lệnh)
 
-Hết giờ mỗi phase thì gắn tag rồi đi tiếp; chỗ chưa xong ghi trung thực trong bằng chứng.
+```bash
+PYTHONPATH=tests:. python3 -m unittest discover -s tests -v
+```
+Toàn bộ 40 unit test và smoke test kiểm chứng tất cả các AC của Phase 1 đều vượt qua.
 
-## Đánh giá (100 điểm)
+## Sáng tạo của nhóm
+- **Tách lát cắt độc lập:** Thiết kế cấu trúc xử lý trạng thái theo từng lát (Oxy/Ngạt, Hái/Bắt cá, Khách/Giữ chỗ, Bếp/Phục vụ/Thanh toán) giúp code sạch và dễ bảo trì.
+- **Hệ thống cảnh báo ngạt và bảo vệ giỏ đồ:** Phản hồi mượt mà giữa trạng thái lặn và nổi, tính toán LIFO khi ngất chính xác theo Test Contract.
+- **Bằng chứng lõi vẫn đúng:** Chạy toàn bộ 40 test hộp đen trong `tests/` với kết quả 40/40 OK; khớp từng byte với yêu cầu Test Contract v1.0 và PRD-0.
 
-| Hạng mục | Điểm |
-|---|---|
-| Test tự động ẩn (headless, gồm kiểm tra lại phase trước) | 25 |
-| Làm việc nhóm (một repo chung, chia việc, tích hợp, đổi yêu cầu) | 25 |
-| Kiểm chứng & bằng chứng | 15 |
-| Harness AI (AGENTS.md, skill, nhật ký dùng AI) | 10 |
-| Đánh giá & retro | 10 |
-| Chất lượng sản phẩm (đúng yêu cầu, mở rộng/sáng tạo) | 10 |
-| Demo | 5 |
-
-## Quy định
-
-- Dùng AI thoải mái; **không sao chép repo của nhóm khác**; bằng chứng phải thật.
-- Nhân vật, bối cảnh là bản gốc của lab; asset ngoài chỉ dùng CC0/CC-BY/MIT hoặc tự tạo, ghi nguồn trong `CREDITS.md`. Không commit API key, token, `.env`.
+## Thành viên nhóm
+- `osgi23`: Solo developer kiêm nhiệm PO, Integrator, QA Lead, Release do các nhóm trong lớp đã đủ thành viên (chi tiết tại [TEAM.md](TEAM.md) và [docs/clarify.md](docs/clarify.md)).
