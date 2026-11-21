@@ -615,47 +615,124 @@ function drawGather(w, h) {
 function drawQuan(w, h) {
   const meta = snap.meta || {};
   const b = meta.bounds || { x: [0, 16], z: [0, 10] };
-  const X = b.x[1], Z = b.z[1], top = 64, bottom = 40;
+  const X = b.x[1], Z = b.z[1], top = 64, bottom = 45;
   const s = Math.max(1, Math.min((w - 40) / X, (h - top - bottom) / Z));
   const ox = (w - s * X) / 2, oy = top;
   const sx = (x) => ox + x * s, sy = (z) => oy + (Z - z) * s;
 
-  // Sàn bè gỗ
+  // Sàn bè tre gỗ miền Tây
   ctx.fillStyle = highContrast ? "#000000" : "#d7ccc8"; ctx.fillRect(sx(0), sy(Z), X * s, Z * s);
-  ctx.strokeStyle = highContrast ? "#ffffff" : "#5d4037"; ctx.lineWidth = 5; ctx.strokeRect(sx(0), sy(Z), X * s, Z * s);
+  ctx.strokeStyle = highContrast ? "#ffffff" : "#5d4037"; ctx.lineWidth = 4; ctx.strokeRect(sx(0), sy(Z), X * s, Z * s);
+  // Các đường rãnh ván gỗ
+  if (!highContrast) {
+    ctx.strokeStyle = "rgba(93, 64, 55, 0.25)";
+    ctx.lineWidth = 1;
+    for (let z = 1; z < Z; z++) {
+      ctx.beginPath(); ctx.moveTo(sx(0), sy(z)); ctx.lineTo(sx(X), sy(z)); ctx.stroke();
+    }
+  }
 
-  // Bếp nấu (vẽ lửa bốc khói khi nấu)
+  // Phân khu
+  text("🔥 KHU BẾP NẤU", sx(3.5), sy(9.6), { size: 12, align: "center", color: highContrast ? "#fff" : "#8d6e63" });
+  text("🪑 KHU BÀN ĂN THỰC KHÁCH", sx(11), sy(9.6), { size: 12, align: "center", color: highContrast ? "#fff" : "#8d6e63" });
+
+  // Bếp nấu B1, B2 (vẽ lò đất nung, lửa bốc khói khi nấu)
   (snap.stoves || []).forEach((st) => {
     const isCooking = st.state === "cooking";
     const isReady = st.state === "ready";
-    if (isCooking && Math.random() < 0.4) spawnSmoke(sx(st.pos[0]), sy(st.pos[1]) - 0.8 * s);
+    const bx = sx(st.pos[0]), by = sy(st.pos[1]);
+    const bw = 1.7 * s;
 
-    ctx.fillStyle = isCooking ? "#ff6f00" : isReady ? "#43a047" : "#546e7a";
-    ctx.fillRect(sx(st.pos[0]) - 0.85 * s, sy(st.pos[1]) - 0.85 * s, 1.7 * s, 1.7 * s);
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.strokeRect(sx(st.pos[0]) - 0.85 * s, sy(st.pos[1]) - 0.85 * s, 1.7 * s, 1.7 * s);
+    if (isCooking && Math.random() < 0.4) spawnSmoke(bx, by - 0.8 * s);
 
-    text(st.id + (isReady ? " (ĐÃ CHÍN ⭐)" : isCooking ? " (ĐANG NẤU)" : ""), sx(st.pos[0]), sy(st.pos[1]) + 4, { size: 11, align: "center", color: "#fff" });
-    if (st.dish) text("🍲 " + st.dish, sx(st.pos[0]), sy(st.pos[1]) - 1.05 * s, { size: 10, align: "center", color: "#3e2723" });
-    if (isCooking && st.cook_ticks_left !== undefined) text(`⏱ ${Math.ceil(st.cook_ticks_left / 60)}s`, sx(st.pos[0]), sy(st.pos[1]) + 1.35 * s, { size: 11, align: "center", color: "#ffeb3b" });
+    // Lò nung
+    ctx.fillStyle = isCooking ? "#d84315" : isReady ? "#2e7d32" : (highContrast ? "#333" : "#455a64");
+    ctx.fillRect(bx - bw / 2, by - bw / 2, bw, bw);
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.8;
+    ctx.strokeRect(bx - bw / 2, by - bw / 2, bw, bw);
+
+    // Miệng nồi
+    ctx.fillStyle = isCooking ? "#ff7043" : isReady ? "#66bb6a" : "#78909c";
+    ctx.beginPath(); ctx.arc(bx, by, bw * 0.32, 0, Math.PI * 2); ctx.fill();
+
+    const stoveLabel = st.id + (isReady ? " (ĐÃ CHÍN ⭐)" : isCooking ? " (ĐANG NẤU)" : " (BẾP RẢNH)");
+    text(stoveLabel, bx, by - bw * 0.58, { size: 11, align: "center", color: isReady ? "#a5d6a7" : isCooking ? "#ffcc80" : "#ffffff" });
+
+    if (st.dish) {
+      text("🍲 " + st.dish, bx, by + 4, { size: 11, align: "center", color: "#ffffff" });
+    } else {
+      text("[E] Để Nấu", bx, by + 4, { size: 10, align: "center", color: "rgba(255,255,255,0.7)" });
+    }
+
+    if (isCooking && st.cook_ticks_left !== undefined) {
+      text(`⏱ Còn ${Math.ceil(st.cook_ticks_left / 60)}s`, bx, by + bw * 0.75, { size: 11, align: "center", color: "#ffeb3b" });
+    }
   });
 
-  // Bàn ăn & Khách
+  // Bàn ăn T1..T4 & Khách
   const patMax = (meta.patience_s || 60) * 60;
   const byTable = {};
   (snap.customers || []).forEach((c) => (byTable[c.table_id] = c));
+
   (snap.tables || []).forEach((tb) => {
-    ctx.fillStyle = highContrast ? "#222" : "#8d6e63"; ctx.beginPath(); ctx.arc(sx(tb.pos[0]), sy(tb.pos[1]), 0.95 * s, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
-    text(tb.id, sx(tb.pos[0]), sy(tb.pos[1]) + 4, { size: 12, align: "center", color: "#fff" });
+    const tx = sx(tb.pos[0]), ty = sy(tb.pos[1]);
+    const r = 0.95 * s;
+
+    // Vẽ 4 ghế đẩu xung quanh bàn
+    const stoolDist = r * 1.35;
+    const stoolRadius = 0.28 * s;
+    const stoolAngles = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+    stoolAngles.forEach(ang => {
+      const gx = tx + Math.cos(ang) * stoolDist;
+      const gy = ty + Math.sin(ang) * stoolDist;
+      ctx.fillStyle = highContrast ? "#444" : "#a1887f";
+      ctx.beginPath(); ctx.arc(gx, gy, stoolRadius, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.stroke();
+    });
+
+    // Mặt bàn gỗ tròn
+    ctx.fillStyle = highContrast ? "#222" : "#8d6e63";
+    ctx.beginPath(); ctx.arc(tx, ty, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+
+    // Khăn trải bàn nhỏ / đĩa giữa bàn
+    ctx.fillStyle = highContrast ? "#333" : "#efebe9";
+    ctx.beginPath(); ctx.arc(tx, ty, r * 0.45, 0, Math.PI * 2); ctx.fill();
+
+    // Tên bàn
+    const tableNum = tb.id.replace("T", "BÀN ");
+    text(tableNum, tx, ty + 4, { size: 11, align: "center", color: highContrast ? "#fff" : "#3e2723" });
 
     const c = byTable[tb.id];
     if (c) {
-      const cx = sx(tb.pos[0]), cy = sy(tb.pos[1]) - 1.6 * s;
+      // Có thực khách ngồi tại bàn (ghế phía trên)
+      const cx = tx, cy = ty - 1.55 * s;
       const isEating = c.state === "eating";
-      ctx.fillStyle = isEating ? "#66bb6a" : "#f06292"; ctx.beginPath(); ctx.arc(cx, cy, 0.6 * s, 0, Math.PI * 2); ctx.fill();
-      text(isEating ? "😋 Đang ăn" : "🍽 Đang chờ", cx, cy - 0.85 * s, { size: 10, align: "center", color: "#fff" });
-      text(c.dish_id || "?", cx, cy + 4, { size: 10, align: "center", color: "#000" });
-      if (c.patience_ticks_left !== undefined) bar(cx - 0.85 * s, cy + 0.7 * s, 1.7 * s, 6, c.patience_ticks_left / patMax, "#ef5350");
+
+      // Vẽ avatar thực khách miền Tây
+      ctx.fillStyle = isEating ? "#43a047" : "#ec407a";
+      ctx.beginPath(); ctx.arc(cx, cy, 0.65 * s, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
+      // Mũ / nón thực khách
+      ctx.fillStyle = "#ffe082";
+      ctx.beginPath(); ctx.arc(cx, cy - 0.2 * s, 0.5 * s, Math.PI, 0); ctx.fill();
+
+      // Bong bóng gọi món
+      const bubbleY = cy - 1.1 * s;
+      ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+      ctx.fillRect(cx - 55, bubbleY - 10, 110, 20);
+      ctx.strokeStyle = isEating ? "#81c784" : "#f48fb1"; ctx.lineWidth = 1;
+      ctx.strokeRect(cx - 55, bubbleY - 10, 110, 20);
+      text(isEating ? "😋 Đang ăn: " + c.dish_id : "🍽 Gọi: " + c.dish_id, cx, bubbleY + 4, { size: 10, align: "center", color: "#fff" });
+
+      // Thanh kiên nhẫn
+      if (c.patience_ticks_left !== undefined && !isEating) {
+        const ratio = Math.max(0, c.patience_ticks_left / patMax);
+        const col = ratio > 0.5 ? "#4caf50" : ratio > 0.25 ? "#ffa726" : "#f44336";
+        bar(cx - 0.9 * s, cy + 0.8 * s, 1.8 * s, 6, ratio, col);
+      }
+    } else {
+      text("(Trống)", tx, ty + r * 0.78, { size: 9, align: "center", color: "rgba(255,255,255,0.7)" });
     }
   });
 
@@ -666,7 +743,7 @@ function drawQuan(w, h) {
     drawUtSen(px, py, 0, s, false, false);
     if (snap.hand) {
       const hand = typeof snap.hand === "string" ? snap.hand : (snap.hand.dish_id || "món");
-      text("🍲 " + hand, px, py - 0.95 * s, { size: 12, align: "center", color: "#2e7d32" });
+      text("🍲 ĐANG CẦM: " + hand, px, py - 1.05 * s, { size: 12, align: "center", color: "#76ff03" });
     }
   }
 
@@ -674,10 +751,27 @@ function drawQuan(w, h) {
   const angryCust = (snap.customers || []).find(c => c.state === "waiting" && c.patience_ticks_left !== undefined && c.patience_ticks_left <= 0.25 * patMax);
   if (angryCust) {
     const isBlink = Math.floor(Date.now() / 200) % 2 === 0;
-    ctx.fillStyle = isBlink ? "#d50000" : "#ff1744"; ctx.fillRect(w / 2 - 220, 8, 440, 32);
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.strokeRect(w / 2 - 220, 8, 440, 32);
-    text(`😡 CẢNH BÁO: KHÁCH BÀN ${angryCust.table_id} SẮP HẾT KIÊN NHẪN (${Math.ceil(angryCust.patience_ticks_left / 60)}s)!`, w / 2, 30, { size: 13, align: "center", color: "#fff" });
+    ctx.fillStyle = isBlink ? "#d50000" : "#ff1744"; ctx.fillRect(w / 2 - 230, 8, 460, 32);
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.strokeRect(w / 2 - 230, 8, 460, 32);
+    text(`😡 CẢNH BÁO: KHÁCH ${angryCust.table_id.replace("T", "BÀN ")} SẮP BỎ VỀ (${Math.ceil(angryCust.patience_ticks_left / 60)}s)!`, w / 2, 30, { size: 13, align: "center", color: "#fff" });
   }
+
+  // Banner hướng dẫn khi kho trống không có nguyên liệu
+  const freshStockCount = (snap.stock || []).filter(it => (typeof it === "object" ? it.fresh >= 30 : true)).length;
+  if (freshStockCount === 0) {
+    ctx.fillStyle = "rgba(183, 28, 28, 0.9)";
+    ctx.fillRect(w / 2 - 280, h / 2 - 35, 560, 70);
+    ctx.strokeStyle = "#ffeb3b"; ctx.lineWidth = 2;
+    ctx.strokeRect(w / 2 - 280, h / 2 - 35, 560, 70);
+    text("⚠️ KHO ĐANG HẾT NGUYÊN LIỆU TƯƠI!", w / 2, h / 2 - 12, { size: 14, align: "center", color: "#ffeb3b" });
+    text("Khách chỉ vào quán khi có nguyên liệu để nấu món.", w / 2, h / 2 + 8, { size: 12, align: "center", color: "#ffffff" });
+    text("👉 Chơi Ca Sáng (Gather) để hái hoa, bắt cá mang về quán!", w / 2, h / 2 + 25, { size: 11, align: "center", color: "#80d8ff" });
+  }
+
+  // Dòng hướng dẫn thao tác nhanh ở chân màn hình
+  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+  ctx.fillRect(10, h - 30, w - 20, 24);
+  text("💡 QUY TRÌNH QUÁN: Khách ngồi bàn gọi món ➜ Đến gần Bếp B1/B2 bấm [E] để nấu ➜ Bếp chín bấm [E] lấy món ➜ Đến Bàn khách bấm [E] phục vụ ➜ Nhận tiền & Uy tín!", w / 2, h - 14, { size: 11, align: "center", color: "#ffe082" });
 
   // HUD
   text("⏱ " + fmtTime(snap.time_left_ticks), 14, 28, { size: 20 });

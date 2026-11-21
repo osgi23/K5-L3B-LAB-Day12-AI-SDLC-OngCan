@@ -248,6 +248,22 @@ def main(argv=None) -> int:
         tuning = load_contract()["tuning"]
         scenario = load_scenario(a.scenario, a.mode, tuning)
         inventory = read_inventory(a.inventory) if a.inventory else None
+        if a.mode == "quan" and inventory is None and "stock" not in scenario:
+            # Mặc định nạp sẵn nguyên liệu tươi để người chơi thử nghiệm ngay ca tối
+            inventory = [
+                {"id": "I1", "kind": "ca_linh", "fresh": 100.0},
+                {"id": "I2", "kind": "ca_linh", "fresh": 100.0},
+                {"id": "I3", "kind": "ca_linh", "fresh": 100.0},
+                {"id": "I4", "kind": "ca_loc", "fresh": 100.0},
+                {"id": "I5", "kind": "ca_loc", "fresh": 100.0},
+                {"id": "I6", "kind": "ca_keo", "fresh": 100.0},
+                {"id": "I7", "kind": "bong_dien_dien", "fresh": 100.0},
+                {"id": "I8", "kind": "bong_dien_dien", "fresh": 100.0},
+                {"id": "I9", "kind": "bong_sung", "fresh": 100.0},
+                {"id": "I10", "kind": "bong_sung", "fresh": 100.0},
+                {"id": "I11", "kind": "keo_neo", "fresh": 100.0},
+                {"id": "I12", "kind": "keo_neo", "fresh": 100.0},
+            ]
         if inventory is not None and "stock" in scenario:
             raise BadInput("vừa có quan.stock vừa có --inventory")
         game = LiveGame(a.mode, tuning, scenario, a.seed, inventory, a.inventory_out, days=a.days)
