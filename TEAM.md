@@ -8,7 +8,7 @@
 
 **Vai quy trình:** PO (đầu mối hỏi giảng viên, giữ `docs/clarify.md`) · Integrator (giữ `docs/contracts/`, gắn tag) · QA lead · Scrum/Release. 
 
-> **Lưu ý:** Do tất cả các nhóm trong lớp đều đã đủ thành viên (full), sinh viên **Nguyễn Mạnh Quân** (MSV: `2A202603776`, GitHub: `osgi23`) thực hiện bài lab một mình (solo 1 thành viên) và kiêm nhiệm tất cả các module (`sim/gather`, `sim/quan`, `client/ui`, `qa`).
+> **Lưu ý:** Do tất cả các nhóm trong lớp đều đã đủ thành viên, sinh viên **Nguyễn Mạnh Quân** (MSV: `2A202603776`, GitHub: `osgi23`) thực hiện bài lab một mình và kiêm nhiệm tất cả các module (`sim/gather`, `sim/quan`, `client/ui`, `qa`).
 
 ## Thỏa thuận làm việc nhóm (Solo)
 
